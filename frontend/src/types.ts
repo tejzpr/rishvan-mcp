@@ -3,7 +3,7 @@ export interface Request {
   CreatedAt: string;
   UpdatedAt: string;
   DeletedAt: string | null;
-  ide_name: string;
+  source_name: string;
   app_name: string;
   question: string;
   response: string;

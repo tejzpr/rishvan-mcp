@@ -46,10 +46,10 @@ func TestSSEBrokerPublish(t *testing.T) {
 	select {
 	case msg := <-ch:
 		var data struct {
-			ID       int    `json:"id"`
-			IDEName  string `json:"ide_name"`
-			AppName  string `json:"app_name"`
-			Question string `json:"question"`
+			ID         int    `json:"id"`
+			SourceName string `json:"source_name"`
+			AppName    string `json:"app_name"`
+			Question   string `json:"question"`
 		}
 		if err := json.Unmarshal([]byte(msg), &data); err != nil {
 			t.Fatalf("failed to parse message: %v", err)
@@ -57,8 +57,8 @@ func TestSSEBrokerPublish(t *testing.T) {
 		if data.ID != 42 {
 			t.Errorf("expected id 42, got %d", data.ID)
 		}
-		if data.IDEName != "test-ide" {
-			t.Errorf("expected ide_name 'test-ide', got %q", data.IDEName)
+		if data.SourceName != "test-ide" {
+			t.Errorf("expected source_name 'test-ide', got %q", data.SourceName)
 		}
 		if data.AppName != "test-app" {
 			t.Errorf("expected app_name 'test-app', got %q", data.AppName)

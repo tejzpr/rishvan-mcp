@@ -29,8 +29,8 @@ func (b *SSEBroker) Unsubscribe(ch chan string) {
 	close(ch)
 }
 
-func (b *SSEBroker) Publish(requestID uint, ideName, appName, question string) {
-	msg := fmt.Sprintf(`{"id":%d,"ide_name":%q,"app_name":%q,"question":%q}`, requestID, ideName, appName, question)
+func (b *SSEBroker) Publish(requestID uint, sourceName, appName, question string) {
+	msg := fmt.Sprintf(`{"id":%d,"source_name":%q,"app_name":%q,"question":%q}`, requestID, sourceName, appName, question)
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 	for ch := range b.clients {

@@ -27,11 +27,11 @@ export async function respondToRequest(id: number, response: string): Promise<vo
   }
 }
 
-export async function fetchIDEName(): Promise<string> {
+export async function fetchSourceName(): Promise<string> {
   const res = await fetch(`${BASE}/api/ide`);
-  if (!res.ok) throw new Error(`Failed to fetch IDE name: ${res.statusText}`);
+  if (!res.ok) throw new Error(`Failed to fetch source name: ${res.statusText}`);
   const data = await res.json();
-  return data.ide_name;
+  return data.source_name;
 }
 
 export function subscribeSSE(onNewRequest: (data: { id: number; app_name: string; question: string }) => void): EventSource {

@@ -28,12 +28,12 @@ func AskRishvan(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		return mcp.NewToolResultError("app_name is required"), nil
 	}
 
-	// Ensure DB is initialized
+	// Ensure DB is initialized (needed for primary mode)
 	if _, err := db.Init(); err != nil {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	// Start web server
+	// Start web server (or detect existing one)
 	if err := webserver.Start(); err != nil {
 		return nil, fmt.Errorf("failed to start web server: %w", err)
 	}
@@ -43,19 +43,26 @@ func AskRishvan(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 	if !browserOpened {
 		browserOpened = true
 		browserMu.Unlock()
-		_ = browser.Open("http://localhost:56234")
+		_ = browser.Open(webserver.BaseURL)
 	} else {
 		browserMu.Unlock()
 	}
 
-	// Create request and get response channel
-	reqID, ch, err := manager.Instance.CreateRequest(config.IDEName, appName, question)
+	if webserver.IsPrimary {
+		return askLocal(ctx, appName, question)
+	}
+	return askRemote(ctx, appName, question)
+}
+
+// askLocal handles the request in-process (primary server mode).
+func askLocal(ctx context.Context, appName, question string) (*mcp.CallToolResult, error) {
+	reqID, ch, err := manager.Instance.CreateRequest(config.SourceName, appName, question)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	// Notify frontend via SSE
-	manager.Broker.Publish(reqID, config.IDEName, appName, question)
+	manager.Broker.Publish(reqID, config.SourceName, appName, question)
 
 	// Block until human responds or context is cancelled
 	select {
@@ -67,4 +74,18 @@ func AskRishvan(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallTool
 		}
 		return mcp.NewToolResultText(response), nil
 	}
+}
+
+// askRemote delegates to the primary rishvan-mcp server via HTTP.
+func askRemote(ctx context.Context, appName, question string) (*mcp.CallToolResult, error) {
+	reqID, err := webserver.RemoteCreateRequest(config.SourceName, appName, question)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create remote request: %w", err)
+	}
+
+	response, err := webserver.RemotePollResponse(ctx, reqID)
+	if err != nil {
+		return nil, err
+	}
+	return mcp.NewToolResultText(response), nil
 }

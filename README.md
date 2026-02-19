@@ -9,7 +9,7 @@ A stdio MCP server that provides a human-in-the-loop tool (`ask_rishvan`) with a
 3. The human sees the question in the React UI and types a response
 4. The response is returned to the LLM as the tool result
 
-Multiple IDEs can use the same server binary — each IDE passes `--ide <name>` and gets isolated state.
+Multiple IDEs can use the same server binary — each source passes `--source <name>` and gets isolated state.
 
 ## Build
 
@@ -24,10 +24,10 @@ This builds the frontend, embeds it into the Go binary, and produces `./rishvan-
 ## Usage
 
 ```bash
-rishvan-mcp --ide <ide-name>
+rishvan-mcp --source <source-name>
 ```
 
-The `--ide` flag is **required**. It scopes all DB records and UI state to that IDE instance.
+The `--source` flag is **required**. It scopes all DB records and UI state to that source instance.
 
 ## MCP Configuration
 
@@ -38,7 +38,7 @@ Add to your MCP client config (e.g. Claude Desktop, Windsurf):
   "mcpServers": {
     "rishvan": {
       "command": "/path/to/rishvan-mcp",
-      "args": ["--ide", "windsurf"]
+      "args": ["--source", "windsurf"]
     }
   }
 }
@@ -47,8 +47,8 @@ Add to your MCP client config (e.g. Claude Desktop, Windsurf):
 ## Docker
 
 ```bash
-docker pull <username>/rishvan-mcp:latest
-docker run --rm -it <username>/rishvan-mcp --ide windsurf
+docker pull tejzpr/rishvan-mcp:latest
+docker run --rm -it tejzpr/rishvan-mcp --source windsurf
 ```
 
 Images are published to Docker Hub on each GitHub release for `linux/amd64` and `linux/arm64`.

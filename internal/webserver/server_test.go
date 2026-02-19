@@ -18,7 +18,7 @@ import (
 
 func setupTestDB(t *testing.T) {
 	t.Helper()
-	config.IDEName = "test-ide"
+	config.SourceName = "test-ide"
 	d, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
@@ -34,17 +34,17 @@ func setupTestDB(t *testing.T) {
 func seedRequests(t *testing.T) {
 	t.Helper()
 	d := db.Get()
-	d.Create(&db.Request{IDEName: "test-ide", AppName: "app-a", Question: "q1", Status: "pending"})
-	d.Create(&db.Request{IDEName: "test-ide", AppName: "app-b", Question: "q2", Status: "pending"})
-	d.Create(&db.Request{IDEName: "test-ide", AppName: "app-a", Question: "q3", Status: "responded", Response: "done"})
-	d.Create(&db.Request{IDEName: "other-ide", AppName: "app-a", Question: "q4", Status: "pending"})
+	d.Create(&db.Request{SourceName: "test-ide", AppName: "app-a", Question: "q1", Status: "pending"})
+	d.Create(&db.Request{SourceName: "test-ide", AppName: "app-b", Question: "q2", Status: "pending"})
+	d.Create(&db.Request{SourceName: "test-ide", AppName: "app-a", Question: "q3", Status: "responded", Response: "done"})
+	d.Create(&db.Request{SourceName: "other-ide", AppName: "app-a", Question: "q4", Status: "pending"})
 }
 
 func TestHandleListRequests(t *testing.T) {
 	setupTestDB(t)
 	seedRequests(t)
 
-	req := httptest.NewRequest("GET", "/api/requests", nil)
+	req := httptest.NewRequest("GET", "/api/requests?source_name=test-ide", nil)
 	w := httptest.NewRecorder()
 	handleListRequests(w, req)
 
@@ -65,11 +65,26 @@ func TestHandleListRequests(t *testing.T) {
 	}
 }
 
+func TestHandleListRequestsNoFilter(t *testing.T) {
+	setupTestDB(t)
+	seedRequests(t)
+
+	req := httptest.NewRequest("GET", "/api/requests", nil)
+	w := httptest.NewRecorder()
+	handleListRequests(w, req)
+
+	var requests []db.Request
+	json.NewDecoder(w.Body).Decode(&requests)
+	if len(requests) != 4 {
+		t.Errorf("expected 4 requests (all IDEs), got %d", len(requests))
+	}
+}
+
 func TestHandleListRequestsFilterByApp(t *testing.T) {
 	setupTestDB(t)
 	seedRequests(t)
 
-	req := httptest.NewRequest("GET", "/api/requests?app_name=app-a", nil)
+	req := httptest.NewRequest("GET", "/api/requests?source_name=test-ide&app_name=app-a", nil)
 	w := httptest.NewRecorder()
 	handleListRequests(w, req)
 
@@ -87,7 +102,7 @@ func TestHandleListRequestsFilterByApp(t *testing.T) {
 
 func TestHandleGetRequest(t *testing.T) {
 	setupTestDB(t)
-	db.Get().Create(&db.Request{IDEName: "test-ide", AppName: "app", Question: "hello", Status: "pending"})
+	db.Get().Create(&db.Request{SourceName: "test-ide", AppName: "app", Question: "hello", Status: "pending"})
 
 	req := httptest.NewRequest("GET", "/api/requests/1", nil)
 	req.SetPathValue("id", "1")
@@ -218,8 +233,8 @@ func TestHandleIDE(t *testing.T) {
 
 	var result map[string]string
 	json.NewDecoder(w.Body).Decode(&result)
-	if result["ide_name"] != "test-ide" {
-		t.Errorf("expected ide_name 'test-ide', got %q", result["ide_name"])
+	if result["source_name"] != "test-ide" {
+		t.Errorf("expected source_name 'test-ide', got %q", result["source_name"])
 	}
 }
 
@@ -227,8 +242,8 @@ func TestIDEIsolation(t *testing.T) {
 	setupTestDB(t)
 	seedRequests(t)
 
-	// Default config is "test-ide", should see 3 requests
-	req := httptest.NewRequest("GET", "/api/requests", nil)
+	// Filter by test-ide, should see 3 requests
+	req := httptest.NewRequest("GET", "/api/requests?source_name=test-ide", nil)
 	w := httptest.NewRecorder()
 	handleListRequests(w, req)
 
@@ -238,11 +253,8 @@ func TestIDEIsolation(t *testing.T) {
 		t.Errorf("expected 3 test-ide requests, got %d", len(requests))
 	}
 
-	// Switch to other-ide, should see 1 request
-	config.IDEName = "other-ide"
-	defer func() { config.IDEName = "test-ide" }()
-
-	req2 := httptest.NewRequest("GET", "/api/requests", nil)
+	// Filter by other-ide, should see 1 request
+	req2 := httptest.NewRequest("GET", "/api/requests?source_name=other-ide", nil)
 	w2 := httptest.NewRecorder()
 	handleListRequests(w2, req2)
 

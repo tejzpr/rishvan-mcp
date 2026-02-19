@@ -8,7 +8,7 @@ import (
 
 type Request struct {
 	gorm.Model
-	IDEName     string     `json:"ide_name" gorm:"column:ide_name;index;not null;default:''"`
+	SourceName  string     `json:"source_name" gorm:"column:source_name;index;not null;default:''"`
 	AppName     string     `json:"app_name" gorm:"index;not null"`
 	Question    string     `json:"question" gorm:"type:text;not null"`
 	Response    string     `json:"response" gorm:"type:text"`

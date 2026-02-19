@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Request } from './types';
-import { fetchRequests, fetchIDEName, subscribeSSE } from './api';
+import { fetchRequests, fetchSourceName, subscribeSSE } from './api';
 import Sidebar from './components/Sidebar';
 import RequestDetail from './components/RequestDetail';
 
@@ -8,7 +8,7 @@ export default function App() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [ideName, setIdeName] = useState<string>('');
+  const [sourceName, setSourceName] = useState<string>('');
   const notifPermissionRef = useRef(false);
 
   const loadRequests = useCallback(async () => {
@@ -36,7 +36,7 @@ export default function App() {
   // Initial load
   useEffect(() => {
     loadRequests();
-    fetchIDEName().then(setIdeName).catch(() => {});
+    fetchSourceName().then(setSourceName).catch(() => {});
   }, [loadRequests]);
 
   // SSE subscription
@@ -74,7 +74,7 @@ export default function App() {
         requests={requests}
         selectedId={selectedId}
         onSelect={setSelectedId}
-        ideName={ideName}
+        sourceName={sourceName}
       />
       <RequestDetail
         request={selectedRequest}

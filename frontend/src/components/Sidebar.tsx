@@ -4,7 +4,7 @@ interface SidebarProps {
   requests: Request[];
   selectedId: number | null;
   onSelect: (id: number) => void;
-  ideName: string;
+  sourceName: string;
 }
 
 function timeAgo(dateStr: string): string {
@@ -17,7 +17,7 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-export default function Sidebar({ requests, selectedId, onSelect, ideName }: SidebarProps) {
+export default function Sidebar({ requests, selectedId, onSelect, sourceName }: SidebarProps) {
   const grouped = requests.reduce<Record<string, Request[]>>((acc, req) => {
     if (!acc[req.app_name]) acc[req.app_name] = [];
     acc[req.app_name].push(req);
@@ -31,7 +31,7 @@ export default function Sidebar({ requests, selectedId, onSelect, ideName }: Sid
       <div className="px-4 py-4 border-b border-gray-800">
         <h1 className="text-lg font-bold text-white tracking-tight">Rishvan</h1>
         <p className="text-xs text-gray-500 mt-0.5">
-          {ideName ? `Connected to ${ideName}` : 'Human-in-the-loop assistant'}
+          {sourceName ? `Connected to ${sourceName}` : 'Human-in-the-loop assistant'}
         </p>
       </div>
       <div className="flex-1 overflow-y-auto">

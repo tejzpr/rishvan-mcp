@@ -8,10 +8,10 @@ func TestCreateAndFetchRequest(t *testing.T) {
 	setupTestDB(t)
 
 	req := Request{
-		IDEName:  "test-ide",
-		AppName:  "test-app",
-		Question: "What color?",
-		Status:   "pending",
+		SourceName: "test-ide",
+		AppName:    "test-app",
+		Question:   "What color?",
+		Status:     "pending",
 	}
 	if err := instance.Create(&req).Error; err != nil {
 		t.Fatalf("failed to create request: %v", err)
@@ -39,10 +39,10 @@ func TestUpdateRequestResponse(t *testing.T) {
 	setupTestDB(t)
 
 	req := Request{
-		IDEName:  "test-ide",
-		AppName:  "app-2",
-		Question: "Pick a number",
-		Status:   "pending",
+		SourceName: "test-ide",
+		AppName:    "app-2",
+		Question:   "Pick a number",
+		Status:     "pending",
 	}
 	instance.Create(&req)
 
@@ -71,11 +71,11 @@ func TestUpdateAlreadyRespondedRequest(t *testing.T) {
 	setupTestDB(t)
 
 	req := Request{
-		IDEName:  "test-ide",
-		AppName:  "app-3",
-		Question: "Yes or no?",
-		Status:   "responded",
-		Response: "Yes",
+		SourceName: "test-ide",
+		AppName:    "app-3",
+		Question:   "Yes or no?",
+		Status:     "responded",
+		Response:   "Yes",
 	}
 	instance.Create(&req)
 
@@ -93,10 +93,10 @@ func TestListRequestsOrderedByCreatedAt(t *testing.T) {
 
 	for i, q := range []string{"first", "second", "third"} {
 		instance.Create(&Request{
-			IDEName:  "test-ide",
-			AppName:  "app",
-			Question: q,
-			Status:   "pending",
+			SourceName: "test-ide",
+			AppName:    "app",
+			Question:   q,
+			Status:     "pending",
 		})
 		_ = i
 	}
@@ -116,9 +116,9 @@ func TestListRequestsOrderedByCreatedAt(t *testing.T) {
 func TestFilterByAppName(t *testing.T) {
 	setupTestDB(t)
 
-	instance.Create(&Request{IDEName: "test-ide", AppName: "alpha", Question: "q1", Status: "pending"})
-	instance.Create(&Request{IDEName: "test-ide", AppName: "beta", Question: "q2", Status: "pending"})
-	instance.Create(&Request{IDEName: "test-ide", AppName: "alpha", Question: "q3", Status: "pending"})
+	instance.Create(&Request{SourceName: "test-ide", AppName: "alpha", Question: "q1", Status: "pending"})
+	instance.Create(&Request{SourceName: "test-ide", AppName: "beta", Question: "q2", Status: "pending"})
+	instance.Create(&Request{SourceName: "test-ide", AppName: "alpha", Question: "q3", Status: "pending"})
 
 	var requests []Request
 	instance.Where("app_name = ?", "alpha").Find(&requests)

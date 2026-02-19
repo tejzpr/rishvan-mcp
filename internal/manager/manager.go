@@ -22,17 +22,17 @@ func NewRequestManager() *RequestManager {
 	}
 }
 
-func (m *RequestManager) CreateRequest(ideName, appName, question string) (uint, <-chan string, error) {
+func (m *RequestManager) CreateRequest(sourceName, appName, question string) (uint, <-chan string, error) {
 	database := db.Get()
 	if database == nil {
 		return 0, nil, fmt.Errorf("database not initialized")
 	}
 
 	req := db.Request{
-		IDEName:  ideName,
-		AppName:  appName,
-		Question: question,
-		Status:   "pending",
+		SourceName: sourceName,
+		AppName:    appName,
+		Question:   question,
+		Status:     "pending",
 	}
 	if err := database.Create(&req).Error; err != nil {
 		return 0, nil, fmt.Errorf("failed to create request: %w", err)

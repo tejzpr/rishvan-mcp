@@ -17,19 +17,19 @@ import (
 var frontendFS embed.FS
 
 func main() {
-	// Parse --ide argument
-	ideName := ""
+	// Parse --source argument
+	sourceName := ""
 	for i, arg := range os.Args[1:] {
-		if arg == "--ide" && i+1 < len(os.Args[1:]) {
-			ideName = os.Args[i+2]
+		if arg == "--source" && i+1 < len(os.Args[1:]) {
+			sourceName = os.Args[i+2]
 			break
 		}
 	}
-	if ideName == "" {
-		fmt.Fprintf(os.Stderr, "error: --ide <name> is required\nusage: rishvan-mcp --ide <ide-name>\n")
+	if sourceName == "" {
+		fmt.Fprintf(os.Stderr, "error: --source <name> is required\nusage: rishvan-mcp --source <source-name>\n")
 		os.Exit(1)
 	}
-	config.IDEName = ideName
+	config.SourceName = sourceName
 
 	// Set up embedded frontend filesystem
 	distFS, err := fs.Sub(frontendFS, "frontend/dist")
